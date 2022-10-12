@@ -51,7 +51,8 @@ public class RNBluetoothHeadsetDetectModule extends ReactContextBaseJavaModule i
                 if (action.equals(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED)) {
                     // Bluetooth headset connection state has changed
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    final int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, BluetoothProfile.STATE_DISCONNECTED);
+                    final int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE,
+                            BluetoothProfile.STATE_DISCONNECTED);
                     if (state == BluetoothProfile.STATE_CONNECTED) {
                         // Device has connected, report it
                         onChange(device.getName());
@@ -88,15 +89,19 @@ public class RNBluetoothHeadsetDetectModule extends ReactContextBaseJavaModule i
             return;
         }
         final AudioManager audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
-        AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
-        for (AudioDeviceInfo device : devices) {
-            final int type = device.getType();
-            if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
-                // Device is found
-                final String deviceName = device.getProductName().toString();
-                onChange(deviceName);
-                return;
+        try {
+            AudioDeviceInfo[] devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+            for (AudioDeviceInfo device : devices) {
+                final int type = device.getType();
+                if (type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP || type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+                    // Device is found
+                    final String deviceName = device.getProductName().toString();
+                    onChange(deviceName);
+                    return;
+                }
             }
+        } catch (NoSuchMethodError e) {
+            // ignore in case of error
         }
         // No devices found
         onChange("");
